@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 const server = require("http").createServer(app);
+const authRoute = require('./Routes/Auth')
+const productsRoute = require('./Routes/Products')
 const mongoose = require("mongoose");
 const cors = require("cors");
 const env = require("dotenv");
@@ -15,9 +17,7 @@ mongoose.connect('mongodb://localhost:27017',{
   } ,() => {
     console.log("connect to db");
   });
-app.get('/',(req , res)=>{
-    return res.send('hi')
-} )
-
+app.use('/auth' , authRoute)
+app.use('/products' , productsRoute )
 
 server.listen(3000 , ()=> console.log('connect'))
