@@ -94,9 +94,57 @@ router.put("/verify/:userId", async (req, res) => {
       }
     );
     // const seavedAddToUsers = await addtoUsers.save()
-    res.status(200).send({ userId: "user updated", token });
+    res.status(200).send({ msg: "user updated", token , updateUser });
   } catch (error) {
-    res.status(400).send({ message: error.message });
+    res.status(400).send(error);
+  }
+});
+
+//forget password 
+
+router.post("/fPass/:email", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    if (!user) return res.status(400).send({ message: "Email is not exist" });
+
+    //create verify code
+    const min = 1000;
+    const max = 10000;
+    const uniquCode = Math.floor(Math.random() * (max - min + 1) + min);
+
+    forgetPasswordCode(user, uniquCode);
+    res.status(200).send({ id: user._id, code: uniquCode });
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+router.put("/fPass/:userId", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    //hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(req.body.password, salt);
+    //generate token
+    const token = jwt.sign(
+      { _id: req.params.userId },
+      process.env.SECRET_TOKEN,
+      {}
+    );
+    const updateUser = await User.updateOne(
+      {
+        _id: user._id,
+      },
+      {
+        $set: {
+          password: hashedPass,
+        },
+      }
+    );
+    res.status(200).send({ msg: "user updated", token, id: user._id });
+  } catch (error) {
+    res.status(400).send(error);
   }
 });
 module.exports = router;
