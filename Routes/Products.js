@@ -1,8 +1,8 @@
 const router = require('express').Router()
 const Product = require('../model/Product')
+const verification = require('../Verification')
 
-
-router.get('/' , async(req,res)=>{
+router.get('/' , verification , async(req,res)=>{
     try {
         const products = await Product.find()
         res.status(200).json(products)
@@ -11,7 +11,7 @@ router.get('/' , async(req,res)=>{
     }
 })
 
-router.post('/' , async(req,res)=>{
+router.post('/' , verification , async(req,res)=>{
     const newProduct = new Product({
         name:req.body.name,
         image:req.body.image,

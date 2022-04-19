@@ -25,9 +25,15 @@ router.post("/singup", async (req, res) => {
     password: req.body.password,
   });
 
+  //create verify code
+  const min = 1000;
+  const max = 10000;
+  const uniquCode = Math.floor(Math.random() * (max - min + 1) + min);
+
   try {
+    emailVerification(newUser, uniquCode);
     const saveUser = await newUser.save();
-    res.status(200).send({ user: newUser._id });
+    res.status(200).send({ id: newUser._id, code: uniquCode });
   } catch (error) {
     res.status(400).send(error);
   }
