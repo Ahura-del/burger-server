@@ -3,11 +3,12 @@ const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const emailVerification = require("../EmailVerification");
+const forgetPasswordCode = require('../ForgetPassword')
 const env = require('dotenv')
 const { registerValidation, loginValidation } = require("../Validation");
 env.config()
 
-
+//register
 router.post("/singup", async (req, res) => {
   const { error } = registerValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -39,6 +40,7 @@ router.post("/singup", async (req, res) => {
   }
 });
 
+//sing in
 router.post("/singin", async (req, res) => {
   const { error } = loginValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -147,4 +149,28 @@ router.put("/fPass/:userId", async (req, res) => {
     res.status(400).send(error);
   }
 });
+
+//edit user
+router.put('/:userId' , async(req,res)=>{
+  const user = await User.findById(req.params.userId);
+  if (!user) return res.status(400).send("User not exist");
+  try {
+    const updateUser = await User.updateOne({
+      _id:user._id
+    },
+    {
+      $set:{
+        // name:req.body.name,
+        // lastName:req.body.lastName,
+        phone:req.body.phone,
+        picture:req.body.picture,
+        location:req.body.location
+      }
+    }
+    )
+    res.status(200).send({msg : 'Profile was updated'})
+  } catch (error) {
+    res.status(400).send(error)
+  }
+})
 module.exports = router;
