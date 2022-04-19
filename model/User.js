@@ -5,11 +5,6 @@ const userSchema = new mongoose.Schema({
         required:true,
         min:2
     },
-    lastName:{
-        type:String,
-        required:true,
-        min:2
-    },
     phone:{
         type:String,
     },

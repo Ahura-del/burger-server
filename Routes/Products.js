@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const Product = require('../model/Product')
-const verification = require('../Verification')
+const verification = require('../config/Verification')
 
 router.get('/' , verification , async(req,res)=>{
     try {

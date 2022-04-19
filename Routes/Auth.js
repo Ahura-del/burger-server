@@ -2,28 +2,29 @@ const router = require("express").Router();
 const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const emailVerification = require("../EmailVerification");
-const forgetPasswordCode = require('../ForgetPassword')
+const emailVerification = require("../config/EmailVerification");
+const forgetPasswordCode = require('../config/ForgetPassword')
+const verify = require('../config/Verification')
 const env = require('dotenv')
-const { registerValidation, loginValidation } = require("../Validation");
+const { registerValidation, loginValidation } = require("../config/Validation");
 env.config()
 
 //register
 router.post("/singup", async (req, res) => {
+
   const { error } = registerValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const emailExist = await User.findOne({ email: req.body.email });
-  if (emailExist) return res.status(400).send("Email alredy exist");
+  if (emailExist) return res.status(500).send("Email alredy exist");
 
   const salt = await bcrypt.genSalt(10);
   const hashedPass = await bcrypt.hash(req.body.password, salt);
 
   const newUser = new User({
     name: req.body.name,
-    lastName: req.body.lastName,
     email: req.body.email,
-    password: req.body.password,
+    password: hashedPass,
   });
 
   //create verify code
@@ -32,11 +33,11 @@ router.post("/singup", async (req, res) => {
   const uniquCode = Math.floor(Math.random() * (max - min + 1) + min);
 
   try {
-    emailVerification(newUser, uniquCode);
     const saveUser = await newUser.save();
+    emailVerification(newUser, uniquCode);
     res.status(200).send({ id: newUser._id, code: uniquCode });
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).send(error.message);
   }
 });
 
@@ -151,7 +152,7 @@ router.put("/fPass/:userId", async (req, res) => {
 });
 
 //edit user
-router.put('/:userId' , async(req,res)=>{
+router.put('/:userId' , verify ,async(req,res)=>{
   const user = await User.findById(req.params.userId);
   if (!user) return res.status(400).send("User not exist");
   try {
@@ -173,4 +174,23 @@ router.put('/:userId' , async(req,res)=>{
     res.status(400).send(error)
   }
 })
+
+
+//delete account
+router.delete("/:userId", verify, async (req, res) => {
+  const user = await User.findById(req.params.userId);
+  if (!user) return res.status(400).send({ message: "User not found!"});
+  //password is correct
+  const validPass = await bcrypt.compare(req.body.delPass, user.password);
+  if (!validPass) return res.status(400).send({ message: "Invalid Passeord" });
+  try {
+    const removeUser = await User.deleteOne({
+      _id: user._id,
+    });
+ 
+    res.status(200).send({ message: "user removed" });
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
 module.exports = router;

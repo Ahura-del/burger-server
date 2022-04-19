@@ -1,11 +1,11 @@
 const express = require('express')
 const app = express()
-const server = require("http").createServer(app);
-const authRoute = require('./Routes/Auth')
-const productsRoute = require('./Routes/Products')
+// const server = require("http").createServer(app);
 const mongoose = require("mongoose");
 const cors = require("cors");
 const env = require("dotenv");
+const authRoute = require('./Routes/Auth')
+const productsRoute = require('./Routes/Products')
 env.config();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
@@ -17,7 +17,10 @@ mongoose.connect('mongodb://localhost:27017',{
   } ,() => {
     console.log("connect to db");
   });
+  app.get('/',(req,res)=>{
+    res.send("Burger API")
+  })
 app.use('/auth' , authRoute)
 app.use('/products' , productsRoute )
 
-server.listen(3000 , ()=> console.log('connect'))
+app.listen(3000 , ()=> console.log('connect'))
