@@ -59,3 +59,4 @@ router.post("/singin", async (req, res) => {
     res.status(400).send({ message: error.message });
   }
 });
+module.exports = router;
