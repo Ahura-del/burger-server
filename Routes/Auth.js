@@ -65,4 +65,38 @@ router.post("/singin", async (req, res) => {
     res.status(400).send({ message: error.message });
   }
 });
+
+//verify account
+router.put("/verify/:userId", async (req, res) => {
+  try {
+    // const user = await User.findById(req.params.userId);
+
+    // const addtoUsers = new ShowUsers({
+    //   _id:user._id,
+    //   name:user.name,
+    //   bio:user.bio,
+    //   pic:user.pic
+    // })
+
+    const token = jwt.sign(
+      { _id: req.params.userId },
+      process.env.TOKEN_SECRET,
+      {}
+    );
+    const updateUser = await User.updateOne(
+      {
+        _id: req.params.userId,
+      },
+      {
+        $set: {
+          verify: req.body.verify,
+        },
+      }
+    );
+    // const seavedAddToUsers = await addtoUsers.save()
+    res.status(200).send({ userId: "user updated", token });
+  } catch (error) {
+    res.status(400).send({ message: error.message });
+  }
+});
 module.exports = router;
