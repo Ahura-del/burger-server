@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema({
         max:1024
     },
     location:{
-        type:Object
+        type:String,
+        default:''
     },
     verify:{
         type:Boolean,
