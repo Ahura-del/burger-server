@@ -3,10 +3,10 @@ const app = express()
 // const server = require("http").createServer(app);
 const mongoose = require("mongoose");
 const cors = require("cors");
-const env = require("dotenv");
+const env = require("dotenv").config();
 const authRoute = require('./Routes/Auth')
 const productsRoute = require('./Routes/Products')
-env.config();
+
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false }));

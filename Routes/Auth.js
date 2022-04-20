@@ -5,9 +5,9 @@ const jwt = require("jsonwebtoken");
 const emailVerification = require("../config/EmailVerification");
 const forgetPasswordCode = require('../config/ForgetPassword')
 const verify = require('../config/Verification')
-const env = require('dotenv')
+const env = require('dotenv').config()
 const { registerValidation, loginValidation } = require("../config/Validation");
-env.config()
+
 
 //register
 router.post("/singup", async (req, res) => {
@@ -71,21 +71,12 @@ router.post("/singin", async (req, res) => {
 
 //verify account
 router.put("/verify/:userId", async (req, res) => {
-  try {
-    // const user = await User.findById(req.params.userId);
-
-    // const addtoUsers = new ShowUsers({
-    //   _id:user._id,
-    //   name:user.name,
-    //   bio:user.bio,
-    //   pic:user.pic
-    // })
-
+     
     const token = jwt.sign(
       { _id: req.params.userId },
-      process.env.TOKEN_SECRET,
-      {}
-    );
+      process.env.SECRET_TOKEN
+      );
+      try {
     const updateUser = await User.updateOne(
       {
         _id: req.params.userId,
@@ -93,11 +84,10 @@ router.put("/verify/:userId", async (req, res) => {
       {
         $set: {
           verify: req.body.verify,
-        },
+        }
       }
-    );
-    // const seavedAddToUsers = await addtoUsers.save()
-    res.status(200).send({ msg: "user updated", token , updateUser });
+      );
+    res.status(200).send({ msg: "user updated", token });
   } catch (error) {
     res.status(400).send(error);
   }
@@ -150,6 +140,28 @@ router.put("/fPass/:userId", async (req, res) => {
     res.status(400).send(error);
   }
 });
+//set Location
+
+router.put('/location/:userId' , async(req, res)=>{
+  try {
+    const updateLocation = await User.updateOne({
+      _id:req.params.userId
+    },
+    {
+      $set:{
+        location:req.body.location
+      }
+    }
+    )
+
+    res.status(200).send({msg : 'location was updated'})
+
+  } catch (error) {
+    res.status(400).send(error)
+
+  }
+})
+
 
 //edit user
 router.put('/:userId' , verify ,async(req,res)=>{
@@ -165,7 +177,12 @@ router.put('/:userId' , verify ,async(req,res)=>{
         // lastName:req.body.lastName,
         phone:req.body.phone,
         picture:req.body.picture,
-        location:req.body.location
+        location:[{
+          city:req.body.city,
+          address:req.body.address,
+          appartment:req.body.appartment,
+          floor:req.body.floor
+        }]
       }
     }
     )
