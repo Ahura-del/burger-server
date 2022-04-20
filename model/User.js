@@ -21,12 +21,9 @@ const userSchema = new mongoose.Schema({
         min:4,
         max:1024
     },
-    location:[{
-        city:{type:String , required:true , default:"Nana Varachha"},
-        address:{type:String},
-        appartment:{type:String},
-        floor:{type:Number}
-    }],
+    location:{
+        type:Object
+    },
     verify:{
         type:Boolean,
         default:false
