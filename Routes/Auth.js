@@ -65,9 +65,24 @@ router.post("/singin", async (req, res) => {
       res.status(201).send({ id: user._id, code: uniquCode });
     }
   } catch (error) {
-    res.status(400).send({ message: error.message });
+    res.status(400).send(error);
   }
 });
+
+router.get('/user/:userId' ,verify, async(req,res)=>{
+  const user = await User.findById(req.params.userId).select('-password')
+  if(!user){
+    return res.status(400).send('This user is not exist')
+  }
+  try {
+    res.status(200).json(user)
+    
+  } catch (error) {
+    res.status(400).send(error)
+  }
+
+} )
+
 
 //verify account
 router.put("/verify/:userId", async (req, res) => {
@@ -95,10 +110,10 @@ router.put("/verify/:userId", async (req, res) => {
 
 //forget password 
 
-router.post("/fPass/:email", async (req, res) => {
+router.get("/fPass/:email", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
-    if (!user) return res.status(400).send({ message: "Email is not exist" });
+    if (!user) return res.status(400).send("Email is not exist");
 
     //create verify code
     const min = 1000;
