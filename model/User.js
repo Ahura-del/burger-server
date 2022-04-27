@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     },
     picture:{
         type:String,
+        default:''
     },
     email:{
         type:String,

@@ -37,7 +37,7 @@ router.post("/singup", async (req, res) => {
     emailVerification(newUser, uniquCode);
     res.status(200).send({ id: newUser._id, code: uniquCode });
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).send(error);
   }
 });
 
@@ -48,7 +48,7 @@ router.post("/singin", async (req, res) => {
 
   try {
     const user = await User.findOne({ email: req.body.email });
-    if (!user) return res.status(400).send({ message: "Email not found!" });
+    if (!user) return res.status(400).send("Email not found!");
 
     const validPass = await bcrypt.compare(req.body.password, user.password);
     if (!validPass) return res.status(400).send("Invalid Password");
@@ -155,6 +155,35 @@ router.put("/fPass/:userId", async (req, res) => {
     res.status(400).send(error);
   }
 });
+//change password
+
+router.put("/newPass/:userId", verify, async (req, res) => {
+  const user = await User.findById(req.params.userId);
+  if (!user) return res.status(400).send("User not found!");
+  //password is correct
+  const validPass = await bcrypt.compare(req.body.oldPass, user.password);
+  if (!validPass) return res.status(400).send("Invalid Passeord");
+  //hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPass = await bcrypt.hash(req.body.newPass, salt);
+  try {
+    const updateUserPass = await User.updateOne(
+      {
+        _id: user._id,
+      },
+      {
+        $set: {
+          password: hashedPass,
+        },
+      }
+    );
+    res.status(200).send("password changed");
+  } catch (error) {
+    res.status(400).send(error);
+  }
+});
+
+
 //set Location
 
 router.put('/location/:userId' , async(req, res)=>{
@@ -188,16 +217,9 @@ router.put('/:userId' , verify ,async(req,res)=>{
     },
     {
       $set:{
-        // name:req.body.name,
-        // lastName:req.body.lastName,
-        phone:req.body.phone,
+        name:req.body.name,
         picture:req.body.picture,
-        location:[{
-          city:req.body.city,
-          address:req.body.address,
-          appartment:req.body.appartment,
-          floor:req.body.floor
-        }]
+        location:req.body.location
       }
     }
     )
@@ -211,16 +233,16 @@ router.put('/:userId' , verify ,async(req,res)=>{
 //delete account
 router.delete("/:userId", verify, async (req, res) => {
   const user = await User.findById(req.params.userId);
-  if (!user) return res.status(400).send({ message: "User not found!"});
+  if (!user) return res.status(400).send("User not found!");
   //password is correct
   const validPass = await bcrypt.compare(req.body.delPass, user.password);
-  if (!validPass) return res.status(400).send({ message: "Invalid Passeord" });
+  if (!validPass) return res.status(400).send("Invalid Passeord" );
   try {
     const removeUser = await User.deleteOne({
       _id: user._id,
     });
  
-    res.status(200).send({ message: "user removed" });
+    res.status(200).send("user removed" );
   } catch (error) {
     res.status(400).send(error);
   }
